@@ -329,17 +329,87 @@ public final class JidCompanion {
         );
     }
 
+    // Realistic Android device profiles: model, manufacturer, modelId, osVersion, buildNumber, ramGb
+    private record AndroidDevice(String model, String manufacturer, String modelId,
+                                 String osVersion, String buildNumber, double ramGb) {}
+
+    private static final List<AndroidDevice> ANDROID_DEVICES = List.of(
+            // Samsung Galaxy S series
+            new AndroidDevice("SM-S928B", "samsung", "SM-S928B", "14", "UP1A.231005.007", 12.0),
+            new AndroidDevice("SM-S926B", "samsung", "SM-S926B", "14", "UP1A.231005.007", 12.0),
+            new AndroidDevice("SM-S921B", "samsung", "SM-S921B", "14", "UP1A.231005.007", 8.0),
+            new AndroidDevice("SM-S918B", "samsung", "SM-S918B", "14", "UP1A.231005.007", 12.0),
+            new AndroidDevice("SM-S916B", "samsung", "SM-S916B", "14", "UP1A.231005.007", 8.0),
+            new AndroidDevice("SM-S911B", "samsung", "SM-S911B", "14", "UP1A.231005.007", 8.0),
+            new AndroidDevice("SM-S908B", "samsung", "SM-S908B", "13", "TP1A.220624.014", 12.0),
+            new AndroidDevice("SM-S906B", "samsung", "SM-S906B", "13", "TP1A.220624.014", 8.0),
+            new AndroidDevice("SM-S901B", "samsung", "SM-S901B", "13", "TP1A.220624.014", 8.0),
+            // Samsung Galaxy A series (very popular worldwide)
+            new AndroidDevice("SM-A546B", "samsung", "SM-A546B", "14", "UP1A.231005.007", 6.0),
+            new AndroidDevice("SM-A346B", "samsung", "SM-A346B", "14", "UP1A.231005.007", 6.0),
+            new AndroidDevice("SM-A155F", "samsung", "SM-A155F", "14", "UP1A.231005.007", 4.0),
+            new AndroidDevice("SM-A256B", "samsung", "SM-A256B", "14", "UP1A.231005.007", 6.0),
+            new AndroidDevice("SM-A536B", "samsung", "SM-A536B", "13", "TP1A.220624.014", 6.0),
+            // Google Pixel
+            new AndroidDevice("Pixel 8 Pro", "Google", "husky", "14", "UD1A.231105.004", 12.0),
+            new AndroidDevice("Pixel 8", "Google", "shiba", "14", "UD1A.231105.004", 8.0),
+            new AndroidDevice("Pixel 7 Pro", "Google", "cheetah", "14", "UD1A.231105.004", 12.0),
+            new AndroidDevice("Pixel 7", "Google", "panther", "14", "UD1A.231105.004", 8.0),
+            new AndroidDevice("Pixel 7a", "Google", "lynx", "14", "UD1A.231105.004", 8.0),
+            new AndroidDevice("Pixel 6a", "Google", "bluejay", "14", "UD1A.231105.004", 6.0),
+            new AndroidDevice("Pixel 6 Pro", "Google", "raven", "13", "TQ3A.230901.001", 12.0),
+            // Xiaomi (huge market in Asia/Africa)
+            new AndroidDevice("2201117TG", "Xiaomi", "2201117TG", "13", "TKQ1.221114.001", 8.0),   // Xiaomi 12
+            new AndroidDevice("23049RAD8C", "Xiaomi", "23049RAD8C", "14", "UKQ1.231003.002", 8.0),  // Xiaomi 14
+            new AndroidDevice("2203121C", "Xiaomi", "2203121C", "13", "TKQ1.221114.001", 6.0),      // Redmi Note 11
+            new AndroidDevice("23076RN4BI", "Xiaomi", "23076RN4BI", "13", "TKQ1.221114.001", 8.0),  // Redmi Note 12 Pro
+            new AndroidDevice("23106RN0DA", "Xiaomi", "23106RN0DA", "14", "UKQ1.231003.002", 8.0),  // Redmi Note 13 Pro
+            // OPPO
+            new AndroidDevice("CPH2581", "OPPO", "CPH2581", "14", "UKQ1.231003.002", 8.0),   // OPPO Find X7
+            new AndroidDevice("CPH2495", "OPPO", "CPH2495", "13", "TP1A.220905.001", 8.0),   // OPPO Reno10
+            new AndroidDevice("CPH2389", "OPPO", "CPH2389", "13", "TP1A.220905.001", 6.0),   // OPPO A78
+            // Vivo
+            new AndroidDevice("V2324", "vivo", "V2324", "14", "UP1A.231005.007", 12.0),  // vivo X100 Pro
+            new AndroidDevice("V2254", "vivo", "V2254", "13", "TP1A.220624.014", 8.0),   // vivo V29
+            // OnePlus
+            new AndroidDevice("CPH2583", "OnePlus", "CPH2583", "14", "UKQ1.231003.002", 16.0),  // OnePlus 12
+            new AndroidDevice("CPH2449", "OnePlus", "CPH2449", "14", "UKQ1.231003.002", 12.0),  // OnePlus 11
+            // Huawei (still used in many markets)
+            new AndroidDevice("NOH-NX9", "HUAWEI", "NOH-NX9", "12", "HUAWEINOH-NX9", 8.0),  // Mate 40 Pro
+            new AndroidDevice("OCE-AN10", "HUAWEI", "OCE-AN10", "12", "HUAWEIOCE-AN10", 8.0) // Mate 40E
+    );
+
     public static JidCompanion android(boolean business) {
-        var model = "Pixel_" + ThreadLocalRandom.current().nextInt(2, 9);
+        var device = ANDROID_DEVICES.get(ThreadLocalRandom.current().nextInt(ANDROID_DEVICES.size()));
         return new JidCompanion(
-                model,
-                "Google",
+                device.model,
+                device.manufacturer,
                 business ? PlatformType.ANDROID_BUSINESS : PlatformType.ANDROID,
-                Version.of(String.valueOf(ThreadLocalRandom.current().nextInt(11, 16))),
-                null,
-                model,
+                Version.of(device.osVersion),
+                device.buildNumber,
+                device.modelId,
                 WhatsAppClientType.MOBILE
         );
+    }
+
+    /**
+     * Get a realistic RAM value in GB for the current device.
+     * Returns the RAM from the matched AndroidDevice profile, or a random realistic value.
+     */
+    public double getDeviceRam() {
+        for (var device : ANDROID_DEVICES) {
+            if (device.model.equals(this.model) && device.manufacturer.equals(this.manufacturer)) {
+                // Add slight variation to look natural (e.g., 8.0 -> 7.68 or 7.85)
+                double base = device.ramGb;
+                double variation = base * (0.93 + ThreadLocalRandom.current().nextDouble() * 0.05);
+                return Math.round(variation * 100.0) / 100.0;
+            }
+        }
+        // Fallback: common RAM values with slight variation
+        double[] commonRam = {4.0, 6.0, 8.0, 8.0, 8.0, 12.0};
+        double base = commonRam[ThreadLocalRandom.current().nextInt(commonRam.length)];
+        double variation = base * (0.93 + ThreadLocalRandom.current().nextDouble() * 0.05);
+        return Math.round(variation * 100.0) / 100.0;
     }
 
     public String osBuildNumber() {

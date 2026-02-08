@@ -6,6 +6,7 @@ import com.github.auties00.cobalt.store.WhatsAppStore;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class WhatsAppIosClientRegistration extends WhatsAppMobileClientRegistration {
     public WhatsAppIosClientRegistration(WhatsAppStore store, WhatsAppClientVerificationHandler.Mobile verification) {
@@ -24,12 +25,19 @@ public final class WhatsAppIosClientRegistration extends WhatsAppMobileClientReg
 
     @Override
     protected String[] getRequestVerificationCodeParameters(String method) {
+        // Derive realistic MCC/MNC from the phone number's country
+        var phoneNumber = getPhoneNumber(store);
+        var mccMnc = MccMncDatabase.getForCountryCode(phoneNumber.getCountryCode());
+
+        // iOS signal bars: 1-3 is typical
+        var cellStrength = String.valueOf(ThreadLocalRandom.current().nextInt(1, 4));
+
         return new String[]{
                 "method", method,
-                "sim_mcc", "000",
-                "sim_mnc", "000",
+                "sim_mcc", mccMnc.mcc(),
+                "sim_mnc", mccMnc.mnc(),
                 "reason", "",
-                "cellular_strength", "1"
+                "cellular_strength", cellStrength
         };
     }
 
